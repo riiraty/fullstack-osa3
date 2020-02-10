@@ -83,20 +83,11 @@ app.use(morgan(':method :url :status - :response-time ms - :person'))
         .catch(error => next(error))
   })
 
-  // const generateId = () => {
-  //     const newId = Math.floor(Math.random()*5000000) + 1
-  //     console.log(newId)
-  //     return newId
-  // }
-
-  app.post('/api/persons', (req, res) => {
-      const body = (req.body)
+  app.post('/api/persons', (req, res, next) => {
+      const body = req.body
+      console.log(req.body)
       
-      if(body.name === "" || body.number === "") {
-          return res.status(400).json({
-              error: 'name and/or number missing'
-          })
-      }
+
 
       // if(persons.some(person => person.name === body.name)) {
       //     return res.status(400).json({
@@ -112,6 +103,7 @@ app.use(morgan(':method :url :status - :response-time ms - :person'))
       person.save().then(savedPerson => {
         res.json(savedPerson.toJSON())
       })
+      .catch(error => next(error))
   })
 
   app.put('/api/persons/:id', (req, res, next) => {
@@ -141,7 +133,11 @@ app.use(morgan(':method :url :status - :response-time ms - :person'))
   
     if (error.name === 'CastError' && error.kind == 'ObjectId') {
       return response.status(400).send({ error: 'malformatted id' })
-    } 
+    } else if (error.name === 'ValidationError') {
+      return response.status(400).json({error: error.message})
+    } // else if (error.name === 'createError') {
+    //   return response.status(404).json({error: error.message})
+    // } // serveriltä poistetun postaminen?
   
     next(error)
   }
